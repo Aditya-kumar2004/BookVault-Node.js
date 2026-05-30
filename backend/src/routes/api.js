@@ -25,8 +25,12 @@ const { seedDatabase } = require('../utils/seeder');
 
 // Configure Multer for Cover Image Uploads
 const coversDir = path.join(__dirname, '../uploads/covers');
-if (!fs.existsSync(coversDir)) {
-  fs.mkdirSync(coversDir, { recursive: true });
+try {
+  if (!fs.existsSync(coversDir)) {
+    fs.mkdirSync(coversDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("⚠️ Warning: Failed to create local uploads directory (normal on serverless read-only filesystems like Vercel):", err.message);
 }
 
 const storage = multer.diskStorage({

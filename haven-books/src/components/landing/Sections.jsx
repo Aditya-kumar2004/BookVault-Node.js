@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, ArrowLeft, Truck, BookOpen, ShieldCheck, Star, ChevronLeft, ChevronRight,
 } from "lucide-react";
@@ -189,9 +189,17 @@ const GENRE_META = [
   { name: "Thriller", emoji: "🔍", image: "/genre-thriller.jpg", count: 612, overlay: "rgba(50,5,5,0.78)" },
   { name: "Romance", emoji: "💕", image: "/genre-romance.jpg", count: 998, overlay: "rgba(80,10,40,0.72)" },
   { name: "Mystery", emoji: "🌙", image: "/genre-mystery.jpg", count: 731, overlay: "rgba(8,12,50,0.78)" },
+  { name: "Military Strategy", emoji: "🎖️", image: "/covers/art_of_war.png", count: 5, overlay: "rgba(35,35,45,0.78)" },
+  { name: "Military Leadership", emoji: "🎖️", image: "/covers/extreme_ownership.png", count: 5, overlay: "rgba(45,35,30,0.78)" },
+  { name: "Mental Toughness & Discipline", emoji: "⚡", image: "/covers/cant_hurt_me.png", count: 5, overlay: "rgba(20,40,55,0.78)" },
+  { name: "Success & Personal Growth", emoji: "🌱", image: "/covers/atomic_habits.png", count: 5, overlay: "rgba(15,50,30,0.78)" },
+  { name: "Wealth & Financial Success", emoji: "💰", image: "/covers/psychology_money.png", count: 5, overlay: "rgba(55,45,15,0.78)" },
 ];
 
 export function Genres() {
+  const user = useAuthStore((s) => s.user);
+  const displayedGenres = GENRE_META.slice(0, 6);
+
   return (
     <section className="container py-12">
       <div className="flex items-end justify-between mb-8">
@@ -199,13 +207,17 @@ export function Genres() {
           <p className="text-xs tracking-[0.2em] text-accent font-bold uppercase mb-1.5">Discover</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold">Browse by Genre</h2>
         </div>
-        <Link to="/categories" className="text-sm font-semibold text-accent hover:underline hidden sm:flex items-center gap-1">
-          All genres <ArrowRight className="h-4 w-4" />
+        <Link
+          to={user ? "/categories" : "/login"}
+          className="text-sm font-semibold text-accent hover:underline flex items-center gap-1 group font-sans"
+        >
+          All genres{" "}
+          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {GENRE_META.map((g, i) => (
+        {displayedGenres.map((g, i) => (
           <motion.div
             key={g.name}
             initial={{ opacity: 0, y: 16 }}
@@ -598,7 +610,7 @@ export function PromoBanner() {
 
   return (
     <section className="container pb-20">
-      <div className="gradient-hero text-primary-foreground rounded-3xl p-10 md:p-14 grid md:grid-cols-2 gap-10 items-center relative overflow-hidden">
+      <div className="gradient-hero text-primary-foreground rounded-3xl p-6 sm:p-10 md:p-14 grid md:grid-cols-2 gap-10 items-center relative overflow-hidden">
         <div className="absolute -right-10 -bottom-10 opacity-20 flex gap-2">
           {BOOKS.slice(0, 3).map((b, i) => (
             <div key={b.id} className="w-24 h-36 rounded-lg overflow-hidden shadow"

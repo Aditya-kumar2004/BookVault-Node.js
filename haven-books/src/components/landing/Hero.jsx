@@ -163,7 +163,7 @@ export function Hero() {
       </div>
 
       {/* ── Main content grid ── */}
-      <div className="container relative z-10 mx-auto px-6 grid lg:grid-cols-[55%_45%] gap-6 lg:gap-10 h-full max-h-[850px] items-center">
+      <div className="container relative z-10 mx-auto px-3 sm:px-6 grid lg:grid-cols-[55%_45%] gap-6 lg:gap-10 h-full max-h-[850px] items-center">
 
         {/* ════════════ LEFT CONTENT ════════════ */}
         <div className="flex flex-col gap-5 lg:gap-7 z-10">
@@ -192,7 +192,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="font-display font-black text-white leading-none uppercase tracking-tight"
-              style={{ fontSize: "clamp(2rem, 4vw, 3.4rem)" }}
+              style={{ fontSize: "clamp(1.5rem, 6vw, 3.4rem)" }}
             >
               THE NEXT CHAPTER
             </motion.div>
@@ -202,7 +202,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="font-display font-black text-white leading-none uppercase tracking-tight"
-              style={{ fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)" }}
+              style={{ fontSize: "clamp(1.8rem, 8vw, 4.8rem)" }}
             >
               IN YOUR
             </motion.div>
@@ -213,7 +213,7 @@ export function Hero() {
               transition={{ delay: 0.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="font-display font-black italic leading-none uppercase tracking-tight"
               style={{
-                fontSize: "clamp(3.2rem, 7vw, 6rem)",
+                fontSize: "clamp(2.2rem, 10vw, 6rem)",
                 background: "linear-gradient(90deg, #F4623A 0%, #ff8c5a 50%, #F4623A 100%)",
                 backgroundSize: "200% auto",
                 WebkitBackgroundClip: "text",
@@ -401,7 +401,7 @@ export function Hero() {
 ══════════════════════════════════════════════════════════ */
 export function PremiumNavbar() {
   const cartCount = useCartStore((s) => s.count());
-  const user = useAuthStore((s) => s.user);
+  const { user, logout } = useAuthStore();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -437,7 +437,7 @@ export function PremiumNavbar() {
         borderBottom: scrolled ? "1px solid rgba(0,0,0,0.06)" : "none",
       }}
     >
-      <div className="container flex h-[68px] items-center gap-4 lg:gap-8">
+      <div className="container flex h-[68px] items-center justify-between gap-2 px-3 sm:px-6">
 
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
@@ -578,14 +578,45 @@ export function PremiumNavbar() {
                   {n.label}
                 </Link>
               ))}
-              {!user && (
+              {user ? (
+                <div className="pt-3 border-t border-gray-100 mt-2 space-y-3">
+                  <div className="px-4 py-2 bg-gray-50 rounded-xl flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm" style={{ background: "#F4623A" }}>
+                      {user.name[0]?.toUpperCase()}
+                    </div>
+                    <div className="text-xs truncate text-gray-800">
+                      <div className="font-semibold truncate">{user.name}</div>
+                      <div className="opacity-75 truncate">{user.email}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link to={user.role === "admin" ? "/admin" : "/dashboard"} onClick={() => setMobileOpen(false)} className="flex-1">
+                      <button
+                        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition hover:brightness-105"
+                        style={{ background: "linear-gradient(135deg,#F4623A,#e8501f)" }}
+                      >
+                        {user.role === "admin" ? "Admin Panel" : "Dashboard"}
+                      </button>
+                    </Link>
+                    <button
+                      className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+                      onClick={() => {
+                        logout();
+                        setMobileOpen(false);
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
                 <div className="flex gap-2 pt-3 border-t border-gray-100 mt-2">
-                  <Link to="/login" className="flex-1">
+                  <Link to="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
                     <button className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold">
                       Sign In
                     </button>
                   </Link>
-                  <Link to="/register" className="flex-1">
+                  <Link to="/register" className="flex-1" onClick={() => setMobileOpen(false)}>
                     <button
                       className="w-full py-2.5 rounded-xl text-sm font-semibold text-white"
                       style={{ background: "#F4623A" }}

@@ -409,9 +409,9 @@ export function BooksAdmin() {
                 <TableRow key={b.id}>
                   <TableCell>
                     <div className="w-10 h-14 rounded overflow-hidden bg-muted border border-border/30">
-                      <img 
-                        src={b.cover_image || coverFromIsbn(b.isbn)} 
-                        alt="" 
+                      <img
+                        src={b.cover_image || coverFromIsbn(b.isbn)}
+                        alt=""
                         className="w-full h-full object-cover"
                         onError={(e) => { e.target.src = `https://placehold.co/100x150?text=Book`; }}
                       />
@@ -595,7 +595,7 @@ export function BooksAdmin() {
                     <span>No image</span>
                   )}
                 </div>
-                
+
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
                     <input
@@ -605,9 +605,9 @@ export function BooksAdmin() {
                       onChange={handleImageUpload}
                       className="hidden"
                     />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       disabled={uploading}
                       onClick={() => document.getElementById("book-cover-upload").click()}
@@ -617,7 +617,7 @@ export function BooksAdmin() {
                     </Button>
                     <span className="text-[10px] text-muted-foreground">Accepts JPEG, PNG, WEBP (Max 2MB)</span>
                   </div>
-                  
+
                   <div className="space-y-1">
                     <Label className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Or Image URL Address</Label>
                     <Input
@@ -798,11 +798,11 @@ export function AuthorsAdmin() {
       <Card className="p-4 flex gap-4 items-center">
         <div className="relative max-w-sm flex-1">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            value={searchQuery} 
-            onChange={(e) => setSearchQuery(e.target.value)} 
-            placeholder="Search authors..." 
-            className="pl-9" 
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search authors..."
+            className="pl-9"
           />
         </div>
       </Card>
@@ -824,25 +824,25 @@ export function AuthorsAdmin() {
             >
               <Card className="p-5 text-center flex flex-col items-center justify-between h-full border border-border/40 hover:shadow-lg hover:border-accent/30 transition-all group relative overflow-hidden">
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button 
-                    onClick={() => openEditModal(a)} 
+                  <button
+                    onClick={() => openEditModal(a)}
                     className="p-1 rounded bg-muted hover:bg-accent/15 text-muted-foreground hover:text-accent transition-all"
                   >
                     <Edit className="h-3.5 w-3.5" />
                   </button>
-                  <button 
-                    onClick={() => handleDelete(a.id)} 
+                  <button
+                    onClick={() => handleDelete(a.id)}
                     className="p-1 rounded bg-muted hover:bg-red-500/15 text-muted-foreground hover:text-red-500 transition-all"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                
+
                 <div className="space-y-3 w-full">
                   <div className="h-24 w-24 rounded-full overflow-hidden shadow-md border-2 border-accent/10 relative mx-auto shrink-0 bg-muted">
-                    <img 
-                      src={a.img || `https://i.pravatar.cc/200?u=${encodeURIComponent(a.name)}`} 
-                      alt={a.name} 
+                    <img
+                      src={a.img || `https://i.pravatar.cc/200?u=${encodeURIComponent(a.name)}`}
+                      alt={a.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
                       onError={(e) => { e.target.src = `https://placehold.co/200?text=${encodeURIComponent(a.name.charAt(0))}`; }}
                     />
@@ -856,9 +856,9 @@ export function AuthorsAdmin() {
                 </div>
 
                 <div className="flex gap-2 w-full mt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full text-xs font-semibold"
                     onClick={() => openEditModal(a)}
                   >
@@ -927,17 +927,17 @@ export function AuthorsAdmin() {
             </div>
 
             <DialogFooter className="pt-4 gap-2 sm:gap-0">
-              <Button 
-                type="button" 
-                variant="ghost" 
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-xl text-xs font-semibold"
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                variant="coral" 
+              <Button
+                type="submit"
+                variant="coral"
                 disabled={submitting}
                 className="rounded-xl text-xs font-bold shadow-lg shadow-coral/10"
               >
@@ -953,28 +953,296 @@ export function AuthorsAdmin() {
 
 /* -------------- Genres -------------- */
 export function GenresAdmin() {
-  const colors = ["#1B4332", "#7C3AED", "#0F766E", "#7F1D1D", "#EC4899", "#0D1B2A"];
+  const [genres, setGenres] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Modals state
+  const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // Fields state
+  const [newGenreName, setNewGenreName] = useState("");
+  const [selectedColor, setSelectedColor] = useState("#1B4332");
+  const [activeGenre, setActiveGenre] = useState(null);
+
+  const palette = [
+    "#1B4332", "#7C3AED", "#0F766E", "#7F1D1D", "#EC4899", "#0D1B2A",
+    "#D97706", "#2563EB", "#4F46E5", "#059669", "#DC2626", "#DB2777"
+  ];
+
+  const fetchInventory = () => {
+    setLoading(true);
+    import("../../lib/api").then(({ default: api }) => {
+      api.get("/books", { params: { per_page: -1 } })
+        .then(({ data }) => {
+          const fetchedBooks = data.data || [];
+          setBooks(fetchedBooks);
+
+          // Group books by genre and count them dynamically
+          const counts = {};
+          fetchedBooks.forEach(b => {
+            if (b.genre) {
+              counts[b.genre] = (counts[b.genre] || 0) + 1;
+            }
+          });
+
+          // Combine hardcoded GENRES with dynamic genres found in database
+          const combined = [];
+          const seen = new Set();
+
+          // 1. First add genres from our predefined GENRES list
+          GENRES.forEach((g, i) => {
+            seen.add(g.name.toLowerCase());
+            combined.push({
+              name: g.name,
+              count: counts[g.name] || 0, // dynamic count
+              color: palette[i % palette.length]
+            });
+          });
+
+          // 2. Add any other dynamic genres found in the books collection
+          Object.keys(counts).forEach(genreName => {
+            if (!seen.has(genreName.toLowerCase())) {
+              seen.add(genreName.toLowerCase());
+              combined.push({
+                name: genreName,
+                count: counts[genreName],
+                color: palette[combined.length % palette.length]
+              });
+            }
+          });
+
+          setGenres(combined);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Failed to load genres:", err);
+          toast.error("Failed to sync genres with active database.");
+          setLoading(false);
+        });
+    });
+  };
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  const handleAddGenre = () => {
+    if (!newGenreName.trim()) {
+      toast.error("Please enter a genre name");
+      return;
+    }
+
+    // Check if it already exists
+    const exists = genres.find(g => g.name.toLowerCase() === newGenreName.trim().toLowerCase());
+    if (exists) {
+      toast.error("This genre already exists");
+      return;
+    }
+
+    const newGenreObj = {
+      name: newGenreName.trim(),
+      count: 0,
+      color: selectedColor
+    };
+
+    setGenres(prev => [...prev, newGenreObj]);
+    toast.success(`Genre "${newGenreName}" registered successfully! 🎉`);
+
+    setNewGenreName("");
+    setAddOpen(false);
+  };
+
+  const handleEditGenre = () => {
+    if (!newGenreName.trim()) {
+      toast.error("Please enter a genre name");
+      return;
+    }
+
+    const oldName = activeGenre.name;
+    const newName = newGenreName.trim();
+
+    if (oldName !== newName && activeGenre.count > 0) {
+      toast.info("Updating books with the new genre name on server...");
+
+      const booksToUpdate = books.filter(b => b.genre.toLowerCase() === oldName.toLowerCase());
+
+      import("../../lib/api").then(({ default: api }) => {
+        const promises = booksToUpdate.map(b =>
+          api.put(`/books/${b.id}`, { genre: newName })
+        );
+
+        Promise.all(promises)
+          .then(() => {
+            toast.success(`Updated ${promises.length} books to the new genre "${newName}"!`);
+            fetchInventory();
+          })
+          .catch((err) => {
+            console.error("Failed to bulk update book genres:", err);
+            toast.error("Some book genre updates failed on the server.");
+            fetchInventory();
+          });
+      });
+    } else {
+      setGenres(prev => prev.map(g => g.name === oldName ? { ...g, name: newName, color: selectedColor } : g));
+      toast.success("Genre settings updated successfully");
+    }
+
+    setEditOpen(false);
+    setActiveGenre(null);
+    setNewGenreName("");
+  };
+
+  const handleDeleteGenre = () => {
+    const oldName = activeGenre.name;
+
+    if (activeGenre.count > 0) {
+      toast.error(`Cannot delete genre "${oldName}" because it has ${activeGenre.count} books assigned to it.`);
+      setDeleteOpen(false);
+      return;
+    }
+
+    setGenres(prev => prev.filter(g => g.name !== oldName));
+    toast.success(`Genre "${oldName}" removed successfully.`);
+    setDeleteOpen(false);
+    setActiveGenre(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="font-display text-3xl font-bold">Genres</h1>
-        <Button variant="coral"><Plus /> Add Genre</Button>
+        <div>
+          <h1 className="font-display text-3xl font-bold">Genres Catalog</h1>
+          <p className="text-muted-foreground">Monitor and manage book genres and categories dynamically.</p>
+        </div>
+        <Button variant="coral" onClick={() => { setSelectedColor(palette[genres.length % palette.length]); setAddOpen(true); }} className="font-bold flex items-center gap-1.5 shadow-lg shadow-coral/10">
+          <Plus className="h-4 w-4" /> Add Genre
+        </Button>
       </div>
+
       <Card>
         <Table>
-          <TableHeader><TableRow><TableHead>Color</TableHead><TableHead>Name</TableHead><TableHead>Books</TableHead><TableHead></TableHead></TableRow></TableHeader>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Color</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Live Books Count</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
           <TableBody>
-            {GENRES.map((g, i) => (
-              <TableRow key={g.name}>
-                <TableCell><div className="w-8 h-8 rounded-md" style={{ background: colors[i] }} /></TableCell>
-                <TableCell className="font-medium">{g.name}</TableCell>
-                <TableCell>{g.count}</TableCell>
-                <TableCell><Button variant="ghost" size="sm">Edit</Button></TableCell>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  Synchronizing genres with active database...
+                </TableCell>
               </TableRow>
-            ))}
+            ) : genres.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  No genres found. Add some above.
+                </TableCell>
+              </TableRow>
+            ) : (
+              genres.map((g) => (
+                <TableRow key={g.name} className="hover:bg-muted/40 transition-colors">
+                  <TableCell>
+                    <div className="w-8 h-8 rounded-lg shadow-inner border border-black/10" style={{ background: g.color }} />
+                  </TableCell>
+                  <TableCell className="font-semibold text-foreground">{g.name}</TableCell>
+                  <TableCell>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${g.count > 0 ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+                      {g.count} {g.count === 1 ? "book" : "books"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => { setActiveGenre(g); setNewGenreName(g.name); setSelectedColor(g.color); setEditOpen(true); }} className="flex items-center gap-1">
+                        <Edit className="h-3.5 w-3.5" /> Edit
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setActiveGenre(g); setDeleteOpen(true); }} className="text-red-500 hover:text-red-600 hover:bg-red-500/10 flex items-center gap-1">
+                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Card>
+
+      {/* ADD GENRE DIALOG */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Genre</DialogTitle>
+            <DialogDescription>Create a new book genre for your BookVault catalog.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="genre-name">Genre Name</Label>
+              <Input id="genre-name" placeholder="e.g., Biography, History..." value={newGenreName} onChange={e => setNewGenreName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Theme Color</Label>
+              <div className="flex gap-2.5 flex-wrap pt-1.5">
+                {palette.map(c => (
+                  <button key={c} onClick={() => setSelectedColor(c)} className={`w-8 h-8 rounded-lg shadow transition ${selectedColor === c ? "ring-2 ring-accent ring-offset-2 scale-110" : "hover:scale-105"}`} style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button variant="coral" onClick={handleAddGenre}>Save Genre</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* EDIT GENRE DIALOG */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Genre Settings</DialogTitle>
+            <DialogDescription>Modify settings for "{activeGenre?.name}". Renaming will bulk-update all books assigned to this genre.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-genre-name">Genre Name</Label>
+              <Input id="edit-genre-name" placeholder="e.g., Biography, History..." value={newGenreName} onChange={e => setNewGenreName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Theme Color</Label>
+              <div className="flex gap-2.5 flex-wrap pt-1.5">
+                {palette.map(c => (
+                  <button key={c} onClick={() => setSelectedColor(c)} className={`w-8 h-8 rounded-lg shadow transition ${selectedColor === c ? "ring-2 ring-accent ring-offset-2 scale-110" : "hover:scale-105"}`} style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="coral" onClick={handleEditGenre}>Apply Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE CONFIRM DIALOG */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-red-500 flex items-center gap-1.5"><ShieldAlert className="h-5 w-5" /> Remove Genre</DialogTitle>
+            <DialogDescription>Are you sure you want to remove the genre "{activeGenre?.name}"? This action is permanent.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteGenre}>Delete Genre</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1004,7 +1272,7 @@ export function InventoryAdmin() {
 
   const handleStockChange = (bookId, newStock) => {
     if (newStock < 0) return;
-    
+
     // Optimistic update
     const prevBooks = [...books];
     setBooks(prev => prev.map(b => b.id === bookId ? { ...b, stock: newStock } : b));
@@ -1043,7 +1311,7 @@ export function InventoryAdmin() {
     const csvContent = csvRows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `inventory_report_${new Date().toISOString().slice(0, 10)}.csv`);
@@ -1101,17 +1369,17 @@ export function InventoryAdmin() {
                   <TableCell>10</TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-1.5 justify-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => handleStockChange(b.id, b.stock - 1)}
                       >
                         −
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => handleStockChange(b.id, b.stock + 1)}
                       >
@@ -1131,7 +1399,7 @@ export function InventoryAdmin() {
 
 const downloadInvoicePDF = (order) => {
   const [name, phone, address, method] = order.shipping_address ? order.shipping_address.split(" | ") : ["Aditya Kumar", "+91 98765 43210", "Default Address", "Method: COD"];
-  
+
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
     <html>
@@ -1398,6 +1666,18 @@ export function OrdersAdmin() {
   const [loading, setLoading] = useState(true);
   const [activeOrderId, setActiveOrderId] = useState(null);
 
+  const getCoverUrl = (book) => {
+    if (!book) return "https://placehold.co/40x56/1a1a2e/fff?text=Book";
+    if (book.cover_image) {
+      if (book.cover_image.startsWith("http") || book.cover_image.startsWith("data:")) {
+        return book.cover_image;
+      }
+      const path = book.cover_image.startsWith("/") ? book.cover_image : `/${book.cover_image}`;
+      return `http://localhost:8000${path}`;
+    }
+    return `https://placehold.co/40x56/1a1a2e/fff?text=Book`;
+  };
+
   useEffect(() => {
     import("../../lib/api").then(({ default: api }) => {
       api.get("/orders")
@@ -1459,12 +1739,33 @@ export function OrdersAdmin() {
               return (
                 <>
                   <TableRow key={o.id} className="hover:bg-muted/30 transition-all">
-                    <TableCell className="font-mono font-bold">BVT-ORD-{o.id}</TableCell>
+                    <TableCell className="font-mono font-bold text-xs">BVT-ORD-{o.id}</TableCell>
                     <TableCell>
                       <div className="font-medium">{o.user?.name || name}</div>
                       <div className="text-xs text-muted-foreground">{o.user?.email || "No Email"}</div>
                     </TableCell>
-                    <TableCell className="font-medium">{totalItems} book{totalItems !== 1 ? "s" : ""}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs text-muted-foreground font-semibold">{totalItems} book{totalItems !== 1 ? "s" : ""}</span>
+                        <div className="flex flex-col gap-1 max-w-[220px]">
+                          {o.items && o.items.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 p-1 rounded bg-muted/40 border border-border/20">
+                              <div className="w-5 h-7 rounded overflow-hidden bg-muted flex-shrink-0">
+                                <img
+                                  src={getCoverUrl(item.book)}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => { e.target.src = "https://placehold.co/40x56/1a1a2e/fff?text=Book"; }}
+                                />
+                              </div>
+                              <span className="text-[11px] font-bold truncate max-w-[170px]" title={item.book?.title}>
+                                {item.book?.title || "Unknown Book"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell className="font-bold text-accent">₹{parseFloat(o.total_amount).toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(o.status)}>{o.status.toUpperCase()}</Badge>
@@ -1523,7 +1824,7 @@ export function OrdersAdmin() {
                                 <div key={idx} className="flex gap-3 items-center p-2 rounded-xl bg-muted/30 border border-border/40">
                                   <div className="w-10 h-14 bg-muted rounded overflow-hidden shadow">
                                     <img
-                                      src={`https://covers.openlibrary.org/b/isbn/${item.book?.isbn}-S.jpg`}
+                                      src={getCoverUrl(item.book)}
                                       alt=""
                                       className="w-full h-full object-cover"
                                       onError={(e) => { e.target.src = "https://placehold.co/40x56/1a1a2e/fff?text=Book"; }}

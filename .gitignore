@@ -9,6 +9,8 @@ haven-books/.env.production
 backend/bookStoreBackend/vendor/
 backend/bookStoreBackend/node_modules/
 backend/bookStoreBackend/.env
+backend/node_modules/
+backend/.env
 backend/bookStoreBackend/storage/logs/*.log
 backend/bookStoreBackend/storage/framework/cache/data/*
 backend/bookStoreBackend/storage/framework/sessions/*

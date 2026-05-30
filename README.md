@@ -1,303 +1,197 @@
-# 📖 BookVault — Premium Digital Library & Bookstore Management System
+<div align="center">
 
-![BookVault Banner](bookvault_banner.png)
+# 📚 BookVault (Haven Books)
 
-[![Vite Version](https://img.shields.io/badge/Vite-5.4.19-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![React Version](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Laravel Version](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.38.0-F107A3?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![Database](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](https://opensource.org/licenses/MIT)
+<!-- Project Banner Image -->
+![BookVault Banner](./bookvault_banner.png)
 
-**BookVault** (also branded as **Haven Books**) is an ultra-premium, full-stack digital bookstore and library management system. Crafted with an eye for luxurious aesthetics, it combines a warm cream literary layout (featuring Playfair Display typography) with a highly secure, containerized Laravel REST API. This platform provides seamless e-commerce functionalities, real-time client state caching, advanced coupon checking, secure OTP registrations, automated payments via Razorpay, and direct third-party Google OAuth integration.
+<div style="margin-top: 15px;">
+  
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Zustand](https://img.shields.io/badge/Zustand-5.0-FF6B35?style=for-the-badge&logo=npm&logoColor=white)](https://zustand-demo.pmnd.rs/)
+[![NodeJS](https://img.shields.io/badge/NodeJS-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![ExpressJS](https://img.shields.io/badge/ExpressJS-4.19-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
----
+</div>
 
-## 🗺️ Project Architecture Overview
+**Premium Digital Bookstore & Library Management System utilizing a Decoupled Single Page Architecture**
 
-BookVault utilizes a **Decoupled Client-Server Architecture** where the client application is completely separate from the API backend.
-
-```
-       ┌────────────────────────┐                  ┌────────────────────────┐
-       │   React Client SPA     │                  │  Laravel API Server    │
-       │ (Vercel CDN / Static)  │                  │ (Render / Docker / VM) │
-       │                        │                  │                        │
-       │  - Zustand State       │  Axios HTTPS     │  - Sanctum Auth        │
-       │  - Framer Motion UI    │ ────────────────>│  - Controller Logic    │
-       │  - React Router V6     │ <────────────────│  - Socialite OAuth     │
-       │                        │   JSON Response  │  - Razorpay Gateway    │
-       └────────────────────────┘                  └────────────────────────┘
-                   │                                           │
-                   ▼                                           ▼
-         ┌───────────────────┐                       ┌───────────────────┐
-         │ Local Storage     │                       │ MySQL Database    │
-         │ (Auth/Cart Caches)│                       │ (Aiven/PlanetScale│
-         └───────────────────┘                       └───────────────────┘
-```
+</div>
 
 ---
 
-## 📊 Project Technical Analysis
+## 🔭 Overview
 
-### 🖥️ Frontend Architecture Details
-* **Core Framework**: React 18.3.1 with Vite 5.4.19 (providing hot module replacement and sub-second builds).
-* **State Management**: **Zustand** (with persistent client caching for user sessions, wishlist items, and shopping cart records).
-* **Styling & UI**: Tailwind CSS 3.4.17 with dynamic dark/light theme switching (`next-themes`), Radix UI primitive systems, and sophisticated typography using **Playfair Display** (for headers) and **DM Sans** (for body text).
-* **Animations**: **Framer Motion 12.38.0** for micro-interactions, page state transitions, floating book physics, and dynamic particle effects.
-* **Routing**: React Router DOM v6 managing browser paths on the client.
-
-### ⚙️ Backend Architecture Details
-* **Core Framework**: Laravel 12.0 running on PHP 8.2+.
-* **Security & Auth**: **Laravel Sanctum** for SPA cookie and token-based stateful authentication, and **Laravel Socialite** for handling OAuth flows.
-* **Payment Gateway**: **Razorpay PHP SDK** integrating seamless checkout verified through cryptographic signatures.
-* **Email & OTP Service**: Custom transaction controller utilizing standard Laravel Mailers to send secure multi-factor confirmation tokens.
-* **Containerization**: Optimized **Docker** deployment with PHP-FPM 8.2 and Nginx serving files over alpine linux.
+**BookVault** (also branded as **Haven Books**) is a premium, full-stack digital bookstore and library management system. Built with a decoupled client-server architecture, it links a highly interactive React.js single-page client with a high-performance Node.js & Express.js REST API. Utilizing MongoDB with Mongoose schemas, the application houses a complete relational catalog with real-time shopping cart persistent caching, passwordless OTP register screens, third-party Google OAuth redirection, promo coupon validation campaigns, and secure cryptographically verified Razorpay payment checkouts.
 
 ---
 
-## ✨ Features
+## 🚀 Key Features
 
-* **3D Animated Floating Book (Error Portal)**: A gorgeous custom interactive 404 page featuring a floating, tilting book built on Framer Motion perspective space that releases floating letter particles on user hover.
-* **Passwordless OTP Email Verification**: Secure registration verified through real-time transactional mail validation codes.
-* **One-Click Google OAuth Integration**: Instant account creation and login via Google Socialite pipelines.
-* **Zustand Cached State Engines**: Instantly updates shopping carts and wishlists, maintaining details offline across user reloads.
-* **Dynamic Coupons Validator**: Direct API checks of coupon rules, expiration dates, and usage counts.
-* **Razorpay Payment Gateway**: Secure purchase checkouts with server-side validation.
-* **Full Admin Management Control**: Admin portals to CRUD books, authors, manage orders, and toggle block/unblock statuses of users.
-
----
-
-## 🛠️ Complete Tech Stack
-
-| Layer | Technology | Details |
-| :--- | :--- | :--- |
-| **Frontend** | React 18.3, Vite 5.4 | High-speed, hot-reloading SPA client. |
-| **Styling** | Tailwind CSS 3.4 | Curated warm cream palettes and sleek dark modes. |
-| **Animations**| Framer Motion 12.38 | Advanced page transitions and particle physics. |
-| **State** | Zustand 5.0 | Lightweight, persistent state manager. |
-| **Backend** | Laravel 12.0 (PHP 8.2) | Enterprise REST API server. |
-| **Database** | MySQL 8.0 | Relational database mapping models. |
-| **Auth** | Sanctum & Socialite | Stateful Bearer Tokens & Google OAuth. |
-| **Payments** | Razorpay SDK 2.9 | Verified gateway payment pipelines. |
-| **Server** | Docker & Nginx | Containerized alpine running PHP-FPM. |
+*   🔑 **Stateless JWT Session Pipeline**: Emulates Laravel Sanctum using secure JSON Web Tokens. Parses `Bearer` authorization headers and verifies roles.
+*   🛡️ **Passwordless OTP Email Verification**: Secures sign-up screens by cryptographically generating 6-digit verification codes and dispatching them via SMTP.
+*   💳 **Secured Razorpay E-Commerce Checkout**: Features server-side inventory stock checks, discount recalculations, and cryptographic HMAC SHA-256 signature verifications.
+*   🎟️ **Promotional Coupon Campaigns**: Validates coupon codes checking active date expiry bounds and usage ceiling locks dynamically.
+*   📈 **Interactive Admin Dashboard Panel**: Empowers admins to CRUD books and authors, review statistics, update delivery shippings, and ban/unban users.
+*   💡 **Mongoose Virtual ID Adapter**: Resolves MongoDB ObjectIDs into standard SQL `id` string fields, achieving **100% out-of-the-box frontend compatibility**!
+*   🍂 **Cozy Literary UI Aesthetics**: Crafted with a premium Tailwind cream-palette aesthetic, smooth Framer Motion transitions, and interactive particle elements.
 
 ---
 
-## 📂 Complete Folder Structure
+## 🛠️ Technology Stack
 
-```
-"BOOK MANAGEMENT SYSTEM"
- ├── backend/                         # Laravel Backend Service
- │    └── bookStoreBackend/
- │         ├── app/
- │         │    ├── Http/
- │         │    │    ├── Controllers/ # Auth, Book, Cart, Coupon, Order, Otp, Razorpay
- │         │    │    ├── Middleware/  # AdminMiddleware, HandleInertiaRequests
- │         │    │    └── Requests/    # Validation layers
- │         │    └── Models/           # User, Book, Author, Cart, CartItem, Order, OrderItem, Wishlist, Coupon
- │         ├── bootstrap/             # App initialization and custom entry hooks
- │         ├── config/                # Framework settings (CORS, Sanctum, Mail, App)
- │         ├── database/              # DB Migrations, factories, and database seeders
- │         ├── routes/                # Route specifications (api.php, web.php, console.php)
- │         ├── storage/               # Application logs and local disk storage
- │         ├── Dockerfile             # Production container setup (PHP-FPM + Alpine)
- │         ├── docker-nginx.conf      # Optimized Nginx server routing configurations
- │         └── docker-entrypoint.sh   # Caching bootstrap script
- ├── haven-books/                     # React Client Application
- │    ├── public/                     # Public graphic assets
- │    ├── src/
- │    │    ├── components/
- │    │    │    ├── ui/               # Core Radix UI components (Button, Input, Sheet, Sidebar)
- │    │    │    ├── landing/          # Hero section, Sections grid
- │    │    │    ├── BookCard.jsx      # Reusable book presentation component
- │    │    │    ├── Navbar.jsx        # Premium navigation bar
- │    │    │    └── Footer.jsx        # Responsive layout footer
- │    │    ├── data/                  # Static models data
- │    │    ├── hooks/                 # Custom reusable React hooks
- │    │    ├── lib/                   # API utilities (dynamic Axios client api.js)
- │    │    ├── pages/
- │    │    │    ├── admin/            # Admin dashboard routes
- │    │    │    ├── dashboard/        # Customer library, wishlist, and settings
- │    │    │    ├── Auth.jsx          # Secure Sign-In, Register, and OTP verification
- │    │    │    ├── Shop.jsx          # Catalog browsing, book details, cart checkout
- │    │    │    └── NotFound.jsx      # 3D interactive floating book 404 page
- │    │    └── stores/                # Zustand persistent stores (Auth, Cart, Wishlist)
- │    ├── vercel.json                 # Vercel SPA routing rewrite configs
- │    └── tailwind.config.js          # Extended color parameters (Cream, Green, Coral palettes)
- └── NOTES.TXT                        # General study and developer notes
+| Architecture | Technologies |
+|---|---|
+| **Frontend SPA** | React.js 18.3, Vite 5.4, Zustand 5.0 (State Engine + LocalStorage Persist) |
+| **Backend REST API** | Node.js, Express.js (MVC Pattern), JWT Session guards |
+| **Database Storage** | MongoDB, Mongoose (Atomic transactions, text indexes, virtual transforms) |
+| **Email Service** | Nodemailer (SMTP dispatch + Server terminal logger fallbacks for offline dev) |
+| **Integrations** | Razorpay Web Checkout SDK (Signature HMACS), Google Socialite OAuth 2.0 |
+
+---
+
+## 📂 Project Structure
+
+The codebase is organized as two decoupled folders running independently:
+
+```text
+BOOK MANAGEMENT SYSTEM/
+│
+├── backend/                  # Express.js REST API Engine
+│   ├── src/
+│   │   ├── config/           # Database setup client (db.js)
+│   │   ├── controllers/      # MVC controllers (Auth, Book, Cart, Order, Coupon, OTP, Razorpay)
+│   │   ├── middleware/       # JWT Auth protectors, Admin guards, global error catchers
+│   │   ├── models/           # Mongoose Database models (User, Book, Author, Cart, Order, Coupon)
+│   │   ├── routes/           # API routes (api.js)
+│   │   └── utils/            # Nodemailer helpers, dynamic database seeder (seeder.js)
+│   ├── uploads/              # Local folder for static cover image uploads
+│   ├── server.js             # Entry-point runner
+│   └── .env                  # Port variables, database strings, and API secrets
+│
+├── haven-books/              # React.js Single Page Client
+│   ├── src/
+│   │   ├── components/       # Reusable layout parts (Navbar, Footer, BookCard)
+│   │   ├── lib/              # Axios customized instance setup (api.js)
+│   │   ├── pages/            # View pages (Shop, Auth, Admin Panels, User Dashboards)
+│   │   ├── stores/           # Zustand persistent state engine (index.js)
+│   │   └── index.css         # Custom typography and tailwind colors
+│   ├── package.json          # Node dependencies
+│   └── .env                  # Frontend environment settings (VITE_API_URL)
+│
+└── bookvault_banner.png      # 8K High-Resolution repository banner
 ```
 
 ---
 
-## 🔒 Security Implementation
+## ⚙️ Installation & Running Guide
 
-1. **Laravel Sanctum Token Verification**: Direct validation of bearer tokens on protected endpoints.
-2. **Dynamic CORS Configuration**: Implemented in [config/cors.php](file:///c:/Users/hp/Desktop/BOOK%20MANAGEMENT%20SYSTEM/backend/bookStoreBackend/config/cors.php) to dynamically whitelist client production domains while whitelisting cookie authentication.
-3. **Role-Based Admin Protection**: The custom `AdminMiddleware` blocks unauthorized users from reaching API resources.
-4. **Environment Variables**: Sensitive tokens (Razorpay Keys, DB secrets, Google client OAuth secrets) are securely handled on the host rather than in the repository.
-5. **Cryptographic Payment Validation**: Server-side checks verify signatures on payment updates to prevent transaction fraud.
+Ensure you have **Node.js** and **MongoDB** (local community server or Atlas URI) installed on your system.
 
----
+### 1. Backend REST API Setup
+1.  Navigate to the `backend/` folder in your terminal:
+    ```bash
+    cd backend
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  We prepared a ready-to-run `.env` file for you. Open `.env` and verify your `MONGODB_URI` database connection string:
+    ```env
+    PORT=8000
+    MONGODB_URI=mongodb://127.0.0.1:27017/bookvault
+    JWT_SECRET=supersecret_jwt_token_auth_secret_key_1234567890_bookvault
+    ```
+4.  **Seed the Database Catalog**: Populate MongoDB with starter users, 8 default books, 6 authors, and promo coupons:
+    ```bash
+    npm run seed
+    ```
+5.  Start the Express server with hot-reloading:
+    ```bash
+    npm run dev
+    ```
 
-## ⚙️ Environment Variables Config
+### 2. Frontend React Client Setup
+1.  Open a new terminal window and navigate to the `haven-books/` directory:
+    ```bash
+    cd haven-books
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Open the frontend `.env` file and set the base API URL to point to the Express backend port:
+    ```env
+    VITE_API_URL=http://localhost:8000
+    ```
+4.  Launch the Vite development server:
+    ```bash
+    npm run dev
+    ```
 
-### 🖥️ Frontend Environment Setup (`haven-books/.env`)
-Create a `.env` file in the root of `haven-books`:
-```env
-# URL pointing to your deployed backend (Laravel) API
-VITE_API_URL=http://127.0.0.1:8000
-```
-
-### ⚙️ Backend Environment Setup (`backend/bookStoreBackend/.env`)
-Create a `.env` file in the root of `backend/bookStoreBackend/`:
-```env
-APP_NAME=BookVault
-APP_ENV=local
-APP_KEY=base64:+IjmZfYoX7jmn5RYcvLRmaKO1IlbV95X9izauLb9T40=
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-# Database Configuration
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=bookvault
-DB_USERNAME=root
-DB_PASSWORD=
-
-# Stateful Domains (CORS support for React Client)
-SANCTUM_STATEFUL_DOMAINS=localhost:5173,localhost:8080
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8080,http://127.0.0.1:5173,http://127.0.0.1:8080
-
-# Mail Configuration (Transactional OTP Emails)
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=adityakuma876@gmail.com
-MAIL_PASSWORD=your_secure_app_password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="adityakuma876@gmail.com"
-MAIL_FROM_NAME="BookVault"
-
-# Socialite Third-Party Login (Google OAuth)
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_REDIRECT_URL=http://127.0.0.1:8000/api/auth/google/callback
-
-# Razorpay E-Commerce Payment Gateway
-RAZORPAY_KEY=your_razorpay_test_key
-RAZORPAY_SECRET=your_razorpay_secret
-```
+Open your browser at the Vite URL (typically `http://localhost:8080` or `http://localhost:5173`) to run the complete BookVault application!
 
 ---
 
-## 🚀 Installation & Local Development Setup
+## ☁️ Vercel Deployment Guide
 
-### ⚙️ 1. Start the Backend API (Laravel)
-1. Navigate to the backend directory:
-   ```bash
-   cd "backend/bookStoreBackend"
-   ```
-2. Install dependencies:
-   ```bash
-   composer install
-   ```
-3. Set up the environment variables:
-   ```bash
-   cp .env.example .env
-   ```
-   *(Generate application key: `php artisan key:generate`)*
-4. Run migrations and database seeding:
-   ```bash
-   php artisan migrate --seed
-   ```
-5. Spin up the API server locally:
-   ```bash
-   php artisan serve
-   ```
-   *(Running on `http://127.0.0.1:8000`)*
+Deploy your full-stack BookVault application on **Vercel** with this clean, production-ready process:
 
-### 🖥️ 2. Start the Frontend Application (Vite/React)
-1. Navigate to the frontend directory:
-   ```bash
-   cd "haven-books"
-   ```
-2. Install npm dependencies:
-   ```bash
-   npm install
-   ```
-3. Spin up the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   *(Running on `http://localhost:5173` or `http://localhost:8080`)*
+### 1. Database Preparation
+Vercel serverless environments require an active, internet-accessible database.
+1. Create a free **MongoDB Atlas** shared cluster.
+2. In the MongoDB Atlas dashboard, navigate to **Network Access** and select **Allow Access from Anywhere** (`0.0.0.0/0`) because Vercel serverless IP ranges are dynamic.
+3. Copy your database connection string (e.g., `mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/bookvault`).
+
+### 2. Deploying the Backend REST API
+1. Connect your GitHub repository to Vercel.
+2. Click **Add New Project** and select your repository.
+3. Configure the following project parameters:
+   * **Project Name**: `bookvault-api`
+   * **Framework Preset**: `Other`
+   * **Root Directory**: `backend`
+4. Expand **Environment Variables** and add the following keys:
+   * `MONGODB_URI`: *Your MongoDB Atlas connection string*
+   * `JWT_SECRET`: *A secure random string*
+   * `NODE_ENV`: `production`
+5. Click **Deploy**. Vercel will build your Express application using the `@vercel/node` builder and output your live backend URL (e.g., `https://bookvault-api.vercel.app`).
+
+### 3. Deploying the Frontend Client
+1. Click **Add New Project** and select your repository again.
+2. Configure the following project parameters:
+   * **Project Name**: `bookvault-client`
+   * **Framework Preset**: `Vite`
+   * **Root Directory**: `haven-books`
+3. Expand **Environment Variables** and add:
+   * `VITE_API_URL`: *Your deployed Vercel backend URL* (e.g., `https://bookvault-api.vercel.app`)
+4. Click **Deploy**. Vercel will compile the React build, bundle files, apply rewrite routing rules, and provide your active bookstore URL!
 
 ---
 
-## ⚡ Async & Performance Optimizations
+## 👥 Default Accounts
 
-1. **Vite Bundler & Asset Minification**: Compiles assets down to highly optimized HTML/JS/CSS files inside `dist`.
-2. **React Lazy Loading & Dynamic Imports**: Modules are loaded on-demand, reducing initial javascript payload.
-3. **Zustand Selective Rerendering**: Core state subscriptions prevent unnecessary React component updates.
-4. **Laravel Production Cache**: Natively implements route, config, and database view caching, lowering request times from ~150ms to ~20ms.
-
----
-
-## 🌐 Production Deployment
-
-### 🖥️ Frontend (Vercel)
-The client includes a customized [vercel.json](file:///c:/Users/hp/Desktop/BOOK%20MANAGEMENT%20SYSTEM/haven-books/vercel.json) configuration that handles client routing parameters dynamically.
-1. Connect `haven-books` as a repository to **Vercel**.
-2. Set the framework preset to `Vite`.
-3. In **Environment Variables**, configure `VITE_API_URL` to point to your deployed Render URL.
-4. Vercel will handle the CI/CD pipeline and serve your frontend.
-
-### ⚙️ Backend (Render)
-Our containerized **Docker** setup guarantees absolute consistency and skips complex web server configuration.
-1. Connect `backend/bookStoreBackend` as a repository to **Render**.
-2. Select **Docker** as the deployment runtime.
-3. Add all environment variables (DB credentials, Google Auth tokens, Razorpay credentials) under **Environment Variables** in Render.
-4. Deploy! Render will build and launch your PHP-FPM Nginx alpine container automatically on port `80`.
+*   🔑 **Administrator Role**:
+    *   Email: [EMAIL_ADDRESS]`
+    *   Password: `1234`
+*   👥 **Customer Role**:
+    *   Email: [EMAIL_ADDRESS]`
+    *   Password: `1234`
 
 ---
 
-## 🔮 Future Architecture Enhancements (Recommended Improvements)
+## 📜 Contributing & License
 
-While BookVault is a robust, production-ready full-stack application, incorporating the following enterprise patterns will further enhance scaling and user engagement:
-
-### 🔄 1. WebSockets & Real-Time Sync
-* **Objective**: Add real-time user-to-admin chats and live book stock updates.
-* **Proposed Design**: Integrate **Laravel Reverb** or **Pusher** on the backend, and the **Socket.io / Echo client** on the React frontend.
-```
-┌──────────────┐                 ┌────────────────┐                 ┌──────────────┐
-│ React Client │ <=============> │ Pusher/Reverb  │ <=============> │ Laravel API  │
-│ (Echo Event) │    WebSockets   │ (Broadcasting) │    Event Dispatch│ (Job Queue)  │
-└──────────────┘                 └────────────────┘                 └──────────────┘
-```
-
-### 🏎️ 2. Database Caching & Redis Integration
-* **Objective**: Reduce database strain during surge sales.
-* **Proposed Design**: Route standard catalog search lists (`GET /api/books`) through a **Redis cache** with automatic invalidation on updates.
+Contributions are welcome! Please feel free to open pull requests or issues. This repository is open-sourced under the terms of the [MIT License](LICENSE).
 
 ---
 
-## 📄 License
+<div align="center">
+  
+**Developed with Antigravity by [Aditya Kumar](https://github.com/Aditya-kumar2004)**
 
-This project is licensed under the **MIT License** — feel free to utilize, modify, and distribute it for private or commercial purposes. See [LICENSE](LICENSE) for full details.
-
----
-
-## 🧑‍💻 Author
-
-**Aditya Kumar**
-* Full Stack Software Engineer specializing in modern scalable systems.
-* **GitHub**: [Aditya-kumar2004](https://github.com/Aditya-kumar2004)
-* **LinkedIn**: [Aditya Kumar](https://www.linkedin.com/in/aditya-kumar7050/)
-* **Email**: [adityakuma876@gmail.com](mailto:adityakuma876@gmail.com)
-
----
-
-<p align="center">
-  Made with 📖, ☕, and 💻. Copyright © 2026 BookVault. All rights reserved.
-</p>
+</div>

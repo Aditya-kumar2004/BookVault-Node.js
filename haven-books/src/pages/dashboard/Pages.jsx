@@ -3,11 +3,11 @@ import { BookCard } from "@/components/BookCard";
 import { ALL_BOOKS, coverFromIsbn } from "@/data/books";
 import { useAuthStore, useWishlistStore, useCartStore } from "@/stores";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Heart, ShoppingBag, Star, Trash2, ShoppingCart } from "lucide-react";
+import { BookOpen, Heart, ShoppingBag, Star, Trash2, ShoppingCart, Lock, CheckCircle2, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -1025,6 +1025,92 @@ export function Reviews() {
   );
 }
 
+function OtpInput({ value, onChange, length = 6 }) {
+  const inputsRef = useRef([]);
+
+  const handleChange = (e, idx) => {
+    const val = e.target.value.replace(/\D/g, "");
+    if (!val) return;
+
+    // Create a pre-allocated array of exactly 6 elements to prevent collapsed index bugs in JS
+    const newOtp = Array(length).fill("");
+    for (let i = 0; i < length; i++) {
+      newOtp[i] = value[i] || "";
+    }
+
+    if (val.length > 1) {
+      // Handle fast consecutive typing or pasting into an active field
+      let valIdx = 0;
+      for (let i = idx; i < length && valIdx < val.length; i++) {
+        newOtp[i] = val[valIdx++];
+      }
+      const updatedValue = newOtp.join("");
+      onChange(updatedValue);
+      const nextIdx = Math.min(idx + val.length, length - 1);
+      inputsRef.current[nextIdx]?.focus();
+    } else {
+      // Normal single character entry
+      newOtp[idx] = val;
+      const updatedValue = newOtp.join("");
+      onChange(updatedValue);
+      if (idx < length - 1) {
+        inputsRef.current[idx + 1]?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (e.key === "Backspace") {
+      const newOtp = Array(length).fill("");
+      for (let i = 0; i < length; i++) {
+        newOtp[i] = value[i] || "";
+      }
+
+      if (!newOtp[idx] && idx > 0) {
+        newOtp[idx - 1] = "";
+        onChange(newOtp.join(""));
+        inputsRef.current[idx - 1]?.focus();
+      } else {
+        newOtp[idx] = "";
+        onChange(newOtp.join(""));
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
+    if (pastedData) {
+      onChange(pastedData);
+      const focusIndex = Math.min(pastedData.length, length - 1);
+      inputsRef.current[focusIndex]?.focus();
+    }
+  };
+
+  return (
+    <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+      {Array.from({ length }).map((_, idx) => {
+        const val = value[idx] || "";
+        return (
+          <input
+            key={idx}
+            ref={(el) => (inputsRef.current[idx] = el)}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            value={val}
+            onChange={(e) => handleChange(e, idx)}
+            onKeyDown={(e) => handleKeyDown(e, idx)}
+            autoFocus={idx === 0}
+            className="w-10 h-11 sm:w-12 sm:h-12 text-center text-lg sm:text-xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all text-gray-800 shadow-sm"
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
@@ -1035,9 +1121,15 @@ export function SettingsPage() {
     email: user?.email || "",
     phone: user?.phone || "",
     bio: user?.bio || "",
-    password: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // New Password Change verification flow states
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("idle"); // "idle" | "otp_sent" | "success"
+  const [otpLoading, setOtpLoading] = useState(false);
 
   const handleSave = async () => {
     if (!formData.name.trim()) return toast.error("Full Name cannot be empty.");
@@ -1046,12 +1138,57 @@ export function SettingsPage() {
     setSubmitting(true);
     try {
       const { default: api } = await import("../../lib/api");
-      const { data } = await api.put("/profile", formData);
+      const { data } = await api.put("/profile", {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio,
+      });
       setAuth(data.user, token);
       toast.success("Profile settings updated successfully! 🎉");
-      setFormData((prev) => ({ ...prev, password: "" }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to save profile changes.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRequestPasswordOtp = async () => {
+    if (!newPassword) return toast.error("Please enter a new password.");
+    if (newPassword.length < 8) return toast.error("Password must be at least 8 characters long.");
+    if (newPassword !== confirmPassword) return toast.error("Passwords do not match.");
+
+    setOtpLoading(true);
+    try {
+      const { default: api } = await import("../../lib/api");
+      await api.post("/otp/send", { email: user.email, name: user.name });
+      setStep("otp_sent");
+      toast.success("Verification code sent to your registered email address! ✉️");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send verification code. Please try again.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyPasswordChange = async () => {
+    if (otp.length !== 6) return toast.error("Please enter the 6-digit verification code.");
+
+    setSubmitting(true);
+    try {
+      const { default: api } = await import("../../lib/api");
+      const { data } = await api.put("/profile", {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio,
+        password: newPassword,
+        otp: otp,
+      });
+      setAuth(data.user, token);
+      setStep("success");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to change password. Invalid or expired OTP.");
     } finally {
       setSubmitting(false);
     }
@@ -1130,18 +1267,6 @@ export function SettingsPage() {
                   className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all placeholder:text-muted-foreground/50 text-foreground"
                 />
               </div>
-
-              <div className="space-y-1.5 sm:col-span-2 border-t pt-5 mt-2">
-                <h4 className="font-display font-bold text-lg text-foreground mb-1">Security</h4>
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Change Password (Optional)</Label>
-                <Input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
-                  placeholder="Leave empty to keep current password"
-                  className="rounded-xl"
-                />
-              </div>
             </div>
 
             <div className="pt-4 flex justify-end">
@@ -1153,6 +1278,110 @@ export function SettingsPage() {
               >
                 {submitting ? "Saving Changes..." : "Save Changes"}
               </Button>
+            </div>
+
+            <div className="space-y-1.5 border-t pt-5 mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Lock className="h-5 w-5 text-accent" />
+                <h4 className="font-display font-bold text-lg text-foreground">Security Settings</h4>
+              </div>
+
+              {step === "success" ? (
+                <div className="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="h-16 w-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
+                    <CheckCircle2 className="h-8 w-8 animate-bounce" />
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-display text-lg font-bold text-emerald-800">Password Changed Successfully!</h5>
+                    <p className="text-xs text-emerald-600 font-medium leading-relaxed max-w-sm mx-auto">
+                      Your BookVault account password has been successfully updated. We have securely logged you in with your new credentials. Thank you for keeping your account secure!
+                    </p>
+                  </div>
+                  <Button
+                    variant="coral"
+                    size="sm"
+                    className="rounded-xl px-6 font-bold"
+                    onClick={() => {
+                      setStep("idle");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                      setOtp("");
+                    }}
+                  >
+                    Done
+                  </Button>
+                </div>
+              ) : step === "otp_sent" ? (
+                <div className="space-y-4 animate-in fade-in duration-300">
+                  <div className="p-4 bg-muted/40 border border-border/60 rounded-xl flex items-start gap-3">
+                    <Mail className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                    <div className="text-xs text-muted-foreground leading-relaxed">
+                      We have sent a 6-digit passcode to <strong className="text-foreground">{user?.email}</strong>. Enter it below to authorize this password change.
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-center block text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification Code</Label>
+                    <OtpInput value={otp} onChange={setOtp} length={6} />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="coral"
+                      disabled={submitting || otp.length !== 6}
+                      onClick={handleVerifyPasswordChange}
+                      className="flex-1 rounded-xl font-bold h-11"
+                    >
+                      {submitting ? "Verifying..." : "Verify & Change Password"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      disabled={submitting}
+                      onClick={() => {
+                        setStep("idle");
+                        setOtp("");
+                      }}
+                      className="rounded-xl"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">New Password</Label>
+                      <Input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password (min. 8 chars)"
+                        className="rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Confirm New Password</Label>
+                      <Input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="rounded-xl"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    disabled={otpLoading || !newPassword || !confirmPassword}
+                    onClick={handleRequestPasswordOtp}
+                    className="w-full rounded-xl font-semibold hover:border-accent hover:text-accent transition-colors flex items-center justify-center gap-2 h-11"
+                  >
+                    {otpLoading ? "Sending OTP..." : "Change Password via Email OTP"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </Card>

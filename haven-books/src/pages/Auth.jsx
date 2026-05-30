@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,13 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Password Recovery Flow States
+  const [recoveryStep, setRecoveryStep] = useState("login"); // "login" | "forgot_email" | "forgot_otp" | "success"
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [recoveryConfirmPassword, setRecoveryConfirmPassword] = useState("");
+  const [recoveryOtp, setRecoveryOtp] = useState("");
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -121,41 +128,370 @@ export function LoginPage() {
     }
   };
 
+  const onSendRecoveryOtp = async (e) => {
+    e.preventDefault();
+    if (!recoveryEmail.trim()) return toast.error("Please enter your email address.");
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ email: recoveryEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to send recovery code.");
+
+      setRecoveryStep("forgot_otp");
+      toast.success(`Verification code sent to ${recoveryEmail}. Check your inbox!`, { duration: 6000 });
+    } catch (err) {
+      toast.error(err.message || "Failed to send recovery passcode. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onResetPassword = async (e) => {
+    e.preventDefault();
+    if (recoveryPassword.length < 8) {
+      return toast.error("Password must be at least 8 characters long.");
+    }
+    if (recoveryPassword !== recoveryConfirmPassword) {
+      return toast.error("Passwords do not match.");
+    }
+    if (recoveryOtp.length !== 6) {
+      return toast.error("Please enter the 6-digit verification code.");
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ email: recoveryEmail, password: recoveryPassword, otp: recoveryOtp }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Reset failed.");
+
+      setRecoveryStep("success");
+    } catch (err) {
+      toast.error(err.message || "Failed to reset password. Invalid or expired code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Split>
-      <div className="space-y-6">
-        <div>
-          <h1 className="font-display text-4xl font-bold">Welcome back</h1>
-          <p className="text-muted-foreground mt-2">Sign in to continue your reading journey.</p>
-        </div>
+      <AnimatePresence mode="wait">
+        {recoveryStep === "login" ? (
+          <motion.div
+            key="login"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <div>
+              <h1 className="font-display text-4xl font-bold">Welcome back</h1>
+              <p className="text-muted-foreground mt-2">Sign in to continue your reading journey.</p>
+            </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-          </div>
-          <div>
-            <Label htmlFor="pw">Password</Label>
-            <Input id="pw" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-          </div>
-          <Button type="submit" variant="coral" className="w-full" size="lg" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="Enter your email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="pw">Password</Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRecoveryStep("forgot_email");
+                      setRecoveryEmail(email);
+                    }}
+                    className="text-xs font-semibold text-accent hover:underline focus:outline-none"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <Input id="pw" type="password" placeholder="Enter your password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              </div>
+              <Button type="submit" variant="coral" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
 
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="flex-1 h-px bg-border" /> OR <div className="flex-1 h-px bg-border" />
-        </div>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex-1 h-px bg-border" /> OR <div className="flex-1 h-px bg-border" />
+            </div>
 
-        <Button variant="outline" className="w-full" size="lg" onClick={() => window.location.href = `${BACKEND_URL}/api/auth/google`}>
-          <GoogleIcon /> Continue with Google
-        </Button>
+            <Button variant="outline" className="w-full" size="lg" onClick={() => window.location.href = `${BACKEND_URL}/api/auth/google`}>
+              <GoogleIcon /> Continue with Google
+            </Button>
 
-        <p className="text-sm text-center text-muted-foreground">
-          Don't have an account? <Link to="/register" className="text-accent font-medium hover:underline">Register</Link>
-        </p>
-      </div>
+            <p className="text-sm text-center text-muted-foreground">
+              Don't have an account? <Link to="/register" className="text-accent font-medium hover:underline">Register</Link>
+            </p>
+          </motion.div>
+        ) : recoveryStep === "forgot_email" ? (
+          <motion.div
+            key="forgot_email"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <div>
+              <div className="h-12 w-12 bg-accent/10 rounded-xl flex items-center justify-center text-accent mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </div>
+              <h1 className="font-display text-4xl font-bold">Recover Password</h1>
+              <p className="text-muted-foreground mt-2">
+                Enter your registered email address below, and we'll send you a 6-digit passcode to reset your credentials.
+              </p>
+            </div>
+
+            <form onSubmit={onSendRecoveryOtp} className="space-y-4">
+              <div>
+                <Label htmlFor="recoveryEmail">Email Address</Label>
+                <Input
+                  id="recoveryEmail"
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  className="rounded-xl"
+                />
+              </div>
+              <Button type="submit" variant="coral" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Sending Code..." : "Send Recovery Code"}
+              </Button>
+            </form>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setRecoveryStep("login");
+                  setRecoveryEmail("");
+                }}
+                className="text-xs font-semibold text-muted-foreground hover:text-accent transition-colors"
+              >
+                ← Back to Login
+              </button>
+            </div>
+          </motion.div>
+        ) : recoveryStep === "forgot_otp" ? (
+          <motion.div
+            key="forgot_otp"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <div>
+              <div className="h-12 w-12 bg-accent/10 rounded-xl flex items-center justify-center text-accent mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h1 className="font-display text-4xl font-bold">Create New Password</h1>
+              <p className="text-muted-foreground mt-2">
+                We've sent a 6-digit recovery code to <strong>{recoveryEmail}</strong>. Enter it below along with your new password.
+              </p>
+            </div>
+
+            <form onSubmit={onResetPassword} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Min. 8 characters"
+                    required
+                    value={recoveryPassword}
+                    onChange={(e) => setRecoveryPassword(e.target.value)}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    required
+                    value={recoveryConfirmPassword}
+                    onChange={(e) => setRecoveryConfirmPassword(e.target.value)}
+                    className="rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <Label className="text-center block text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification Code</Label>
+                <OtpInput
+                  value={recoveryOtp}
+                  onChange={setRecoveryOtp}
+                  length={6}
+                />
+              </div>
+
+              <Button type="submit" variant="coral" className="w-full py-6 text-base font-bold shadow-xl mt-4" size="lg" disabled={loading}>
+                {loading ? "Resetting Password..." : "Verify & Reset Password"}
+              </Button>
+            </form>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setRecoveryStep("forgot_email");
+                  setRecoveryOtp("");
+                  setRecoveryPassword("");
+                  setRecoveryConfirmPassword("");
+                }}
+                className="text-xs font-semibold text-muted-foreground hover:text-accent transition-colors"
+              >
+                ← Back to email entry
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6 text-center"
+          >
+            <div className="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-6 text-center space-y-6 shadow-sm">
+              <div className="h-16 w-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="space-y-2">
+                <h2 className="font-display text-2xl font-bold text-emerald-800">Password Reset Successful!</h2>
+                <p className="text-sm text-emerald-600 font-medium leading-relaxed max-w-sm mx-auto">
+                  Your BookVault account password has been successfully updated. You can now sign in securely with your new password. Thank you for keeping your account safe!
+                </p>
+              </div>
+              <Button
+                variant="coral"
+                size="lg"
+                className="w-full rounded-xl font-bold py-6 text-base"
+                onClick={() => {
+                  setRecoveryStep("login");
+                  setRecoveryEmail("");
+                  setRecoveryPassword("");
+                  setRecoveryConfirmPassword("");
+                  setRecoveryOtp("");
+                }}
+              >
+                Return to Login
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Split>
+  );
+}
+
+function OtpInput({ value, onChange, length = 6 }) {
+  const inputsRef = useRef([]);
+
+  const handleChange = (e, idx) => {
+    const val = e.target.value.replace(/\D/g, "");
+    if (!val) return;
+
+    // Create a pre-allocated array of exactly 6 elements to prevent collapsed index bugs in JS
+    const newOtp = Array(length).fill("");
+    for (let i = 0; i < length; i++) {
+      newOtp[i] = value[i] || "";
+    }
+
+    if (val.length > 1) {
+      // Handle fast consecutive typing or pasting into an active field
+      let valIdx = 0;
+      for (let i = idx; i < length && valIdx < val.length; i++) {
+        newOtp[i] = val[valIdx++];
+      }
+      const updatedValue = newOtp.join("");
+      onChange(updatedValue);
+      const nextIdx = Math.min(idx + val.length, length - 1);
+      inputsRef.current[nextIdx]?.focus();
+    } else {
+      // Normal single character entry
+      newOtp[idx] = val;
+      const updatedValue = newOtp.join("");
+      onChange(updatedValue);
+      if (idx < length - 1) {
+        inputsRef.current[idx + 1]?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (e.key === "Backspace") {
+      const newOtp = Array(length).fill("");
+      for (let i = 0; i < length; i++) {
+        newOtp[i] = value[i] || "";
+      }
+
+      if (!newOtp[idx] && idx > 0) {
+        newOtp[idx - 1] = "";
+        onChange(newOtp.join(""));
+        inputsRef.current[idx - 1]?.focus();
+      } else {
+        newOtp[idx] = "";
+        onChange(newOtp.join(""));
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
+    if (pastedData) {
+      onChange(pastedData);
+      const focusIndex = Math.min(pastedData.length, length - 1);
+      inputsRef.current[focusIndex]?.focus();
+    }
+  };
+
+  return (
+    <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+      {Array.from({ length }).map((_, idx) => {
+        const val = value[idx] || "";
+        return (
+          <input
+            key={idx}
+            ref={(el) => (inputsRef.current[idx] = el)}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            value={val}
+            onChange={(e) => handleChange(e, idx)}
+            onKeyDown={(e) => handleKeyDown(e, idx)}
+            autoFocus={idx === 0}
+            className="w-11 h-12 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-bold bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all text-gray-800 shadow-sm"
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -241,29 +577,29 @@ export function RegisterPage() {
               <h1 className="font-display text-4xl font-bold">Create account</h1>
               <p className="text-muted-foreground mt-2">Join BookVault and start reading today.</p>
             </div>
-            <form onSubmit={onFormSubmit} className="space-y-4">
+            <form onSubmit={onFormSubmit} className="space-y-4" autoComplete="off">
               <div>
                 <Label>Full name</Label>
-                <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="John Doe" />
+                <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="John Doe" autoComplete="new-name" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <Label>Email</Label>
-                  <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="john@example.com" />
+                  <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="john@example.com" autoComplete="new-email" />
                 </div>
                 <div>
                   <Label>Phone Number</Label>
-                  <Input type="tel" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 234-567-890" />
+                  <Input type="tel" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 234-567-890" autoComplete="new-phone" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Password</Label>
-                  <Input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" />
+                  <Input type="password" placeholder="Enter your password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} autoComplete="new-password" />
                 </div>
                 <div>
                   <Label>Confirm</Label>
-                  <Input type="password" required value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} placeholder="••••••••" />
+                  <Input type="password" placeholder="Confirm your password" required value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} autoComplete="new-password" />
                 </div>
               </div>
 
@@ -308,15 +644,10 @@ export function RegisterPage() {
             <form onSubmit={onVerifyOtp} className="space-y-5">
               <div className="space-y-2">
                 <Label className="text-center block text-xs font-bold uppercase tracking-wider text-muted-foreground">Verification Code</Label>
-                <Input 
-                  type="text" 
-                  maxLength={6} 
-                  required 
-                  value={otp} 
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g,''))} 
-                  className="text-center text-2xl tracking-[0.5em] font-bold h-14" 
-                  placeholder="000000" 
-                  autoFocus
+                <OtpInput
+                  value={otp}
+                  onChange={setOtp}
+                  length={6}
                 />
               </div>
 
@@ -326,8 +657,8 @@ export function RegisterPage() {
             </form>
 
             <div className="text-center space-y-3 pt-2">
-              <button 
-                onClick={() => setStep("form")} 
+              <button
+                onClick={() => setStep("form")}
                 className="text-xs font-semibold text-muted-foreground hover:text-accent transition-colors"
               >
                 ← Back to registration

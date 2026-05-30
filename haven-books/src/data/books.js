@@ -1,5 +1,6 @@
 export const coverFromIsbn = (isbn) => {
   const covers = {
+    // Original 8 books
     "9780525559474": "/covers/midnight_library.png",
     "9780525559473": "/covers/midnight_library.png",
     "9780385737951": "/covers/maze_runner.png",
@@ -13,7 +14,31 @@ export const coverFromIsbn = (isbn) => {
     "9780439708180": "/covers/harry_potter_1.png",
     "9780857197689": "/covers/psychology_money.png",
     "9780062457714": "/covers/subtle_art.png",
-    "9781982137285": "/covers/echoes_eternity.png"
+    "9781982137285": "/covers/echoes_eternity.png",
+    // New 25 books
+    "9780195014761": "/covers/art_of_war.png",
+    "9781544512280": "/covers/cant_hurt_me.png",
+    "9781250067050": "/covers/extreme_ownership.png",
+    "9781455570249": "/covers/make_your_bed.png",
+    "9780812996838": "/covers/call_sign_chaos.png",
+    "9780691018546": "/covers/on_war.png",
+    "9780316044691": "/covers/lone_survivor.png",
+    "9780525953722": "/covers/no_easy_day.png",
+    "9781250156945": `https://covers.openlibrary.org/b/isbn/9781250156945-L.jpg`,  // Discipline Equals Freedom
+    "9781936891009": "/covers/warrior_ethos.png",
+    "9781443456623": "/covers/five_am_club.png",
+    "9781938258756": `https://covers.openlibrary.org/b/isbn/9781938258756-L.jpg`,  // The Mountain Is You
+    "9781500462000": `https://covers.openlibrary.org/b/isbn/9781500462000-L.jpg`,  // Unbeatable Mind
+    "9780553580532": "/covers/gates_of_fire.png",
+    "9781591845324": "/covers/leaders_eat_last.png",
+    "9781591846352": "/covers/start_with_why.png",
+    "9781591847816": "/covers/ego_is_enemy.png",
+    "9781591846353": `https://covers.openlibrary.org/b/isbn/9781591846353-L.jpg`,  // The Obstacle Is The Way
+    "9780140280197": "/covers/laws_of_power.png",
+    "9781612680194": "/covers/rich_dad_poor_dad.png",
+    "9781593302008": `https://covers.openlibrary.org/b/isbn/9781593302008-L.jpg`,  // Think and Grow Rich
+    "9780984358106": "/covers/millionaire_fastlane.png",
+    "9781544514215": "/covers/almanack_naval.png",
   };
   return covers[isbn] || `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
 };
@@ -193,6 +218,11 @@ export const GENRES = [
   { name: "Thriller", color: "bg-genre-thriller", count: 612 },
   { name: "Romance", color: "bg-genre-romance", count: 998 },
   { name: "Mystery", color: "bg-genre-mystery", count: 731 },
+  { name: "Military Strategy", color: "bg-genre-thriller", count: 5 },
+  { name: "Military Leadership", color: "bg-genre-nonfiction", count: 5 },
+  { name: "Mental Toughness & Discipline", color: "bg-genre-fiction", count: 5 },
+  { name: "Success & Personal Growth", color: "bg-genre-romance", count: 5 },
+  { name: "Wealth & Financial Success", color: "bg-genre-mystery", count: 5 },
 ];
 
 export const AUTHORS = [

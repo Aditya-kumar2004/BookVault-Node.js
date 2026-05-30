@@ -21,12 +21,28 @@ function Shell({ children }) {
 }
 
 export function Browse() {
+  const { slug } = useParams();
   const [genre, setGenre] = useState(null);
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const params = {};
+    if (slug) {
+      // Find the genre name that matches the slug (case-insensitive)
+      const found = GENRES.find((g) => g.name.toLowerCase() === decodeURIComponent(slug).toLowerCase());
+      if (found) {
+        setGenre(found.name);
+      } else {
+        setGenre(null);
+      }
+    } else {
+      setGenre(null);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    setLoading(true);
+    const params = { per_page: -1 };
     if (genre) params.genre = genre;
     import("../lib/api").then(({ default: api }) => {
       api.get("/books", { params }).then(({ data }) => {
@@ -505,7 +521,7 @@ export function CartPage() {
           {items.map(({ book, qty }) => (
             <div key={book.id} className="bg-card rounded-xl p-4 flex gap-4 items-center shadow-soft border border-border/40 hover:border-accent/30 transition-all">
               <div className="w-16 h-24 rounded overflow-hidden bg-muted shrink-0">
-                <img src={coverFromIsbn(book.isbn)} alt="" className="w-full h-full object-cover" />
+                <img src={book.cover_image || coverFromIsbn(book.isbn)} alt="" className="w-full h-full object-cover" />
               </div>
               <div className="flex-1">
                 <h3 className="font-display font-semibold">{book.title}</h3>

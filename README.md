@@ -192,6 +192,6 @@ Contributions are welcome! Please feel free to open pull requests or issues. Thi
 
 <div align="center">
   
-**Developed with Antigravity by [Aditya Kumar](https://github.com/Aditya-kumar2004)**
+**Developed [Aditya Kumar](https://github.com/Aditya-kumar2004)**
 
 </div>

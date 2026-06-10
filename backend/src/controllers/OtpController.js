@@ -103,14 +103,16 @@ class OtpController {
 </div>
       `;
 
-      // Dispatch Email in the background asynchronously so the client gets an instant response under 50ms
-      sendEmail({
-        email: emailLower,
-        subject: 'Your BookVault Verification Code',
-        html: emailHtml,
-      }).catch(err => {
+      // Await email dispatch to ensure compatibility with serverless environments (like Vercel)
+      try {
+        await sendEmail({
+          email: emailLower,
+          subject: 'Your BookVault Verification Code',
+          html: emailHtml,
+        });
+      } catch (err) {
         console.error("Background SMTP Dispatch Failed:", err);
-      });
+      }
 
       return res.json({ message: 'OTP sent successfully. Check your email.' });
     } catch (error) {
@@ -251,14 +253,16 @@ class OtpController {
 </div>
       `;
 
-      // Dispatch Welcome Email in the background asynchronously so the client gets an instant response under 50ms
-      sendEmail({
-        email: emailLower,
-        subject: 'Welcome to BookVault! Here is your 20% discount code 🎉',
-        html: welcomeHtml,
-      }).catch(err => {
+      // Await email dispatch to ensure compatibility with serverless environments (like Vercel)
+      try {
+        await sendEmail({
+          email: emailLower,
+          subject: 'Welcome to BookVault! Here is your 20% discount code 🎉',
+          html: welcomeHtml,
+        });
+      } catch (err) {
         console.error("Background newsletter mail dispatch failed:", err);
-      });
+      }
 
       return res.json({
         message: 'Subscribed successfully! Check your inbox for the 20% discount code 🎉',

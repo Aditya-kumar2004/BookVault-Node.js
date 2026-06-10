@@ -354,13 +354,15 @@ class AuthController {
 </div>
       `;
 
-      sendEmail({
-        email: emailLower,
-        subject: 'BookVault Password Recovery Code',
-        html: emailHtml,
-      }).catch(err => {
+      try {
+        await sendEmail({
+          email: emailLower,
+          subject: 'BookVault Password Recovery Code',
+          html: emailHtml,
+        });
+      } catch (err) {
         console.error("Background Recovery Mail Dispatch Failed:", err);
-      });
+      }
 
       return res.json({ message: 'Recovery passcode sent successfully. Check your email.' });
     } catch (error) {
